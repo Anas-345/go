@@ -1,0 +1,35 @@
+package main
+
+import (
+	"fmt"
+)
+
+func sendSMSToCouple(msgToCustomer, msgToSpouse string) (int, error) {
+	costCustomer, err := sendSMS(msgToCustomer)
+	if err != nil {
+		return 0, err
+	}
+	costSpouse, err := sendSMS(msgToSpouse)
+	if err != nil {
+		return 0, err
+	}
+	return costCustomer + costSpouse, nil
+}
+
+func sendSMS(message string) (int, error) {
+	const maxTextLen = 25
+	const costPerChar = 2
+	if len(message) > maxTextLen {
+		return 0, fmt.Errorf("can't send texts over %v characters", maxTextLen)
+	}
+	return costPerChar * len(message), nil
+}
+
+func main() {
+	amount, err := sendSMSToCouple("Hello", "Welcome")
+	if err != nil {
+		fmt.Println("Can't send msg.", err)
+		return
+	}
+	fmt.Println("Your couple msg costs $", amount)
+}
