@@ -25,16 +25,17 @@ func (b *bankAccount) deposit() {
 	}
 }
 
-func (b *bankAccount) withdraw() {
+func (b *bankAccount) withdraw() error {
 	var am int
 	fmt.Print("Enter amount you want to withdraw: ")
 	_, err := fmt.Scan(&am)
 	if err != nil {
-		fmt.Println("Invalid value")
+		return fmt.Errorf("Invalid input")
 	} else if am > int(b.balance) {
-		fmt.Println("Insufficient balance")
+		return fmt.Errorf("Insufficient balance")
 	} else {
 		b.balance -= float64(am)
+		return nil
 	}
 }
 
@@ -64,7 +65,7 @@ func menu() int {
 }
 
 func main() {
-	accounts := []bankAccount{}
+	accounts := map[int]bankAccount{}
 	isContinue := true
 	for isContinue {
 		choice := menu()
@@ -75,25 +76,48 @@ func main() {
 				fmt.Println(err)
 				continue
 			}
-			s := bankAccount{
-				number:  (len(accounts) + 1),
+			num := len(accounts)
+			accounts[num] = bankAccount{
+				number:  num,
 				balance: initialAmount,
 			}
-			accounts = append(accounts, s)
-			fmt.Printf(`Successfully made with account no. %d and with balance %.2f`, s.number, s.balance)
+			fmt.Printf(`Successfully made with account no. %d and with balance %.2f`, accounts[num].number, accounts[num].balance)
 			fmt.Println()
 		case 2:
 			fmt.Println(accounts[0].number, accounts[0].balance)
 		case 3:
-			accounts[0].deposit()
+			fmt.Print("Enter your account number: ")
+			var accNum int
+			_, err := fmt.Scan(&accNum)
+			if err != nil {
+				fmt.Println("Invalid input")
+				continue
+			}
+			temp := accounts[accNum]
+			temp.deposit()
+			accounts[accNum] = temp
 		case 4:
-			accounts[0].withdraw()
+			fmt.Print("Enter your account number: ")
+			var accNum int
+			_, err := fmt.Scan(&accNum)
+			if err != nil {
+				fmt.Println("Invalid input")
+				continue
+			}
+			temp := accounts[accNum]
+			err = temp.withdraw()
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
+			accounts[accNum] = temp
 		case 5:
 			isContinue = false
 		default:
 			fmt.Println("Invalid input")
 		}
 	}
-	fmt.Println(accounts[0].number, accounts[0].balance)
-
+	for _, v := range accounts {
+		fmt.Println(v.number, v.balance)
+	}
 }
